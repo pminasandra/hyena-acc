@@ -12,7 +12,15 @@ import datetime as dt, numpy as np
 from errors import *
 
 class crawler:
-    __doc__ = '\n        Class crawler, a way to read an n second interval and update fast.\n        Please construct all future feature extraction and classification functions with this object as an argument.\n\n        Attributes:\n                surge   (numpy array):|\n                sway    (numpy array):|__       contains respective accelerometer data over the time spanned by the crawler.\n                heave   (numpy array):|\n                vedba   (numpy array):|\n                \n        '
+    """Class crawler, a way to read an n second interval and update fast.
+                Please construct all future feature extraction and classification functions with this object as an argument.
+
+                Attributes:
+                    surge   (numpy array):|
+                    sway    (numpy array):|__       contains respective accelerometer data over the time spanned by the crawler.
+                    heave   (numpy array):|
+                    vedba   (numpy array):|
+                """
 
     def __init__(self, ListOfLists, initialise_time, window_duration):
         """

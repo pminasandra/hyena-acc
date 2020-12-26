@@ -20,12 +20,7 @@ def hdf5_ListsOfVariables(hdf5_file_path):
                                                 openfile['A'][1],\
                                                 openfile['A'][2],\
                                                 openfile['vedba'][0],\
-                                                dt.datetime(openfile['UTC'][0],\
-                                                                openfile['UTC'][1],\
-                                                                openfile['UTC'][2],\
-                                                                openfile['UTC'][3],\
-                                                                openfile['UTC'][4],\
-                                                                openfile['UTC'][5]),\
+                                                dt.datetime(*[int(x[0]) for x in openfile['UTC']]),\
                                                 openfile['fs'][0][0]
         del openfile
         return [surge, sway, heave, vedba, UTC, freq]
