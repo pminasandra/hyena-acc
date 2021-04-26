@@ -33,6 +33,9 @@ def extract_features_for_ground_truth():
     Extracts features and classifications based on ground-truth audits,
     and saves them to files in PROJECTROOT/DATA/ExtractedFeatures/
     as defined in variables.py
+
+    Args:
+        none
     """
 
     print("\033[1;31mExtracting features for all ground truth data to PROJECTROOT/Data/ExtractedFeatures/\033[0;39m")
@@ -91,11 +94,7 @@ def extract_features_for_ground_truth():
         Num_Audit = 1
         for audit in AuditIndices:
             csvfile = open(PROJECTROOT+DATA+"ExtractedFeatures/"+IND_LOOKUP[hyena]+"_AUD_"+str(Num_Audit)+".csv", "w")
-            csvfile.write("time,state,")
-            for func in ListOfFeatureFunctions:
-                csvfile.write(func.__name__)
-                csvfile.write(",") 
-            csvfile.write("\n")
+            csvfile.write("time,state," + ",".join([f.__name__ for f in ListOfFeatureFunctions])+ "\n")
             CurrData = LoadedAuditFile[audit[0]:audit[1]] #Excludes the last "EOA" line
             
             CrawlerPlans = [[], [], []] ### CrawlerPlans is a list of 3 lists, 1) Start times for crawler, 2) Number of crawler updates, 3) State of hyena
@@ -116,9 +115,7 @@ def extract_features_for_ground_truth():
                 for i in range(CrawlerPlans[1][run[0]]):
                     csvfile.write(str(hyena_start_time + dt.timedelta(seconds = Crawler.init_point/Crawler._frequency))+",")
                     csvfile.write(str(CrawlerPlans[2][run[0]])+",")
-                    for func in ListOfFeatureFunctions:
-                        csvfile.write(str(func(Crawler))+",")
-                    csvfile.write("\n")
+                    csvfile.write(",".join([str(f(Crawler)) for f in ListOfFeatureFunctions]) + "\n")
                     Crawler.update(CRAWLER_UPDATE_DURATION)
             print("\033[1;32mCrawler run complete at\033[0;39m", dt.datetime.now())
             csvfile.close()
@@ -130,14 +127,15 @@ def extract_features_for_ground_truth():
         del SOAs
         del EOAs
 
-    ####################################################################################################################################################
-    ###     CLEANUP
-    ####################################################################################################################################################
-
-    all_audit_extractions = [x for x in os.listdir(PROJECTROOT + DATA + "ExtractedFeatures/") if x[-4:]==".csv"]
-    print(all_audit_extractions)
 
 def extract_features_for_all_data():
+    """
+    Extracts features and classifications from all available accelerometer data,
+    and saves them to files in PROJECTROOT/DATA/FeaturesInTotal/ as defined in variables.py
+
+    Args:
+        none
+    """
 
     print("\033[1;31mExtracting features from all available data\033[0;39m")
 
@@ -154,7 +152,7 @@ def extract_features_for_all_data():
         WorkingListOfVariables = hdf5_ListsOfVariables(hdf5_file_path(hyena, 25))
         StartTime = WorkingListOfVariables[4]
         Crawler = crawler(WorkingListOfVariables, WorkingListOfVariables[4], WINDOW_DURATION)
-        print(Crawler, "initialised.")
+        print("\033[1;32mNow working on {}\033[0;39m".format(hyena))
 
         ExtractionDir = PROJECTROOT + DATA + "FeaturesInTotal/"
 
@@ -175,5 +173,5 @@ def extract_features_for_all_data():
         del WorkingListOfVariables
         del Crawler
 
-extract_features_for_ground_truth()
+#extract_features_for_ground_truth()
 #extract_features_for_all_data()
