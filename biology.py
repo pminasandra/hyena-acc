@@ -6,6 +6,8 @@ import math
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 import powerlaw
+import statistics
+from scipy import signal
 
 from config import *
 from variables import *
@@ -208,6 +210,216 @@ def vedba_and_behaviour_correlations():
 
     plt.savefig(PROJECTROOT + FIGURES + "States_and_VeDBAs.png")
 
+
+def _isDay(time):
+
+    if 6 <= time.hour < 18:
+        return True
+    else:
+        return False
+
+def day_vs_night_vigilance_behaviours():
+
+    LyupBout_Day_Global = []
+    LyupBout_Night_Global = []
+
+    TimeDayLyupsGlobal = 0
+    TimeDayLyupsInd = []
+    TimeNightLyupsGlobal = 0
+    TimeNightLyupsInd = []
+
+    LyingToLyupCount_Day_Global = 0
+    TransitionProbDayInd = []
+    LyingToLyupCount_Night_Global = 0
+    TransitionProbNightInd = []
+
+    Report = open(PROJECTROOT + DATA + "BiologicalAnalyses/" + "ViglanceBehaviourReport.txt", "w")
+    Report.write("Vigilance behaviour (LYUP) with day and Night\n\n")
+
+    Vigilance_fig, ax = plt.subplots()
+
+    for hyena in HYENAS:
+        TimeAndStates = [line for line in open(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")][1:]
+        TimeAndStates = [(dt.datetime.fromisoformat(line.split(",")[0]), line.split(",")[1].rstrip("\n"))\
+                                                            for line in TimeAndStates]
+        LyupBout_Day = []
+        LyupBout_Night = []
+
+        TimeDayLyups = 0
+        TimeNightLyups = 0
+
+        LyingToLyupCount_Day = 0
+        LyingToLyupCount_Night = 0
+
+        count = 0
+        boutLength = 0
+
+
+        for (time, state) in TimeAndStates[:-1]:
+            if state == LYUP:
+                boutLength += WINDOW_DURATION
+
+                if _isDay(time):
+                    TimeDayLyups += WINDOW_DURATION
+                    TimeDayLyupsGlobal += WINDOW_DURATION
+                else:
+                    TimeNightLyups += WINDOW_DURATION
+                    TimeNightLyupsGlobal += WINDOW_DURATION
+
+            elif state == LYING:
+                if _isDay(time) and boutLength > 0:#Note boutLength only tracks LYUP states here and later
+                    LyupBout_Day.append(boutLength)
+                    LyupBout_Day_Global.append(boutLength)
+                    boutLength = 0
+                elif (not _isDay(time)) and boutLength > 0:#Note boutLength only tracks LYUP states here and later
+                    LyupBout_Night.append(boutLength)
+                    LyupBout_Night_Global.append(boutLength)
+                    boutLength = 0
+
+                if TimeAndStates[count+1][1] == LYUP:
+                    if _isDay(time):
+                        LyingToLyupCount_Day += 1
+                        LyingToLyupCount_Day_Global += 1
+                    else:
+                        LyingToLyupCount_Night += 1
+                        LyingToLyupCount_Night_Global += 1
+
+            else:
+                if _isDay(time) and boutLength > 0:#Note boutLength only tracks LYUP states here and later
+                    LyupBout_Day.append(boutLength)
+                    LyupBout_Day_Global.append(boutLength)
+                    boutLength = 0
+                elif (not _isDay(time)) and boutLength > 0:#Note boutLength only tracks LYUP states here and later
+                    LyupBout_Night.append(boutLength)
+                    LyupBout_Night_Global.append(boutLength)
+                    boutLength = 0
+
+            count += 1
+
+        Report.write("["+hyena+"]\n")
+
+        TimeInLyup_Day = TimeDayLyups / (TimeDayLyups + TimeNightLyups)
+        Report.write("Proportion of time spent in LYUP state:\tDay: {:.3f}\tNight: {:.3f}\n".format(TimeInLyup_Day, 1 - TimeInLyup_Day))
+        TimeDayLyupsInd.append(TimeInLyup_Day)
+        TimeNightLyupsInd.append(1 - TimeInLyup_Day)
+
+        LyingToLyup_prop_Day = LyingToLyupCount_Day / (LyingToLyupCount_Day + LyingToLyupCount_Night)
+        Report.write("Proprtion of LYING states moving to LYUP:\tDay: {:.3f}\tNight: {:.3f}\n".format(LyingToLyup_prop_Day, 1 - LyingToLyup_prop_Day))
+        TransitionProbDayInd.append(LyingToLyup_prop_Day)
+        TransitionProbNightInd.append(1 - LyingToLyup_prop_Day)
+
+        Day_fit = powerlaw.Fit([x/3 for x in LyupBout_Day], discrete=True, xmin=1)
+        Night_fit = powerlaw.Fit([x/3 for x in LyupBout_Night], discrete=True, xmin=1)
+        Day_fit.plot_ccdf(linewidth = 1.5, color="red", alpha=0.4, ax=ax)
+        Night_fit.plot_ccdf(linewidth = 1.5, color="darkblue", alpha=0.4, ax=ax)
+
+    Report.write("[TOTAL]\n")
+
+    TimeInLyup_Day = TimeDayLyupsGlobal / (TimeDayLyupsGlobal + TimeNightLyupsGlobal)
+    Report.write("Proportion of time spent in LYUP state:\tDay: {:.3f} +/- {:.3f} \tNight: {:.3f} +/- {:.3f}\n".format(TimeInLyup_Day, statistics.stdev(TimeDayLyupsInd), 1 - TimeInLyup_Day, statistics.stdev(TimeNightLyupsInd)))
+
+    LyingToLyup_prop_Day = LyingToLyupCount_Day_Global / (LyingToLyupCount_Day_Global + LyingToLyupCount_Night_Global)
+    Report.write("Proprtion of LYING states moving to LYUP:\tDay: {:.3f} +/- {:.3f}\tNight: {:.3f} +/- {:.3f}\n".format(LyingToLyup_prop_Day, statistics.stdev(TransitionProbDayInd), 1 - LyingToLyup_prop_Day, statistics.stdev(TransitionProbNightInd)))
+
+    Day_fit = powerlaw.Fit([x/3 for x in LyupBout_Day_Global], discrete=True, xmin=1)
+    Night_fit = powerlaw.Fit([x/3 for x in LyupBout_Night_Global], discrete=True, xmin=1)
+    Day_fit.plot_ccdf(linewidth = 1.5, color = "red", label="Day bouts", ax=ax)
+    Night_fit.plot_ccdf(linewidth = 1.5, color = "darkblue", label = "Night bouts", ax=ax)
+
+    plt.legend()
+    plt.xlabel("Number of windows, each of 3 seconds")
+    plt.ylabel("CCDF")
+    plt.savefig(PROJECTROOT + FIGURES + "LYUP_BDDS_DayVsNight.pdf")
+
+    Report.close()
+
+
+def hourly_activity_patterns():
+    fig_true, axs = plt.subplots(2,1, sharex=True, sharey=True)
+    #for i in axs:
+    #    i.set_box_aspect(0.5)
+
+    for hyena in HYENAS:
+        TimeAndStates = [line for line in open(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")][1:]
+        TimeAndStates = [(dt.datetime.fromisoformat(line.split(",")[0]), line.split(",")[1].rstrip("\n"))\
+                                                            for line in TimeAndStates]
+
+
+        DaysAndHours_Dict = {}
+        for (time, state) in TimeAndStates:
+
+            if (time.month, time.day, time.hour) not in DaysAndHours_Dict:
+                DaysAndHours_Dict[(time.month, time.day, time.hour)] = []
+
+            if state in [WALK, LOPE]:
+                DaysAndHours_Dict[(time.month, time.day, time.hour)].append(1)
+            else:
+                DaysAndHours_Dict[(time.month, time.day, time.hour)].append(0)
+
+        DaysAndHours_Dict = {which_hour:statistics.mean(activity) for (which_hour, activity) in DaysAndHours_Dict.items()}
+        HourlyActivityTimeSeries = np.array(list(DaysAndHours_Dict.values()))
+                
+        autocorrelation = signal.correlate(HourlyActivityTimeSeries, HourlyActivityTimeSeries, mode='same') / len(HourlyActivityTimeSeries)
+        lags = signal.correlation_lags(len(HourlyActivityTimeSeries), len(HourlyActivityTimeSeries), mode='same')
+        axs[0].plot(lags, autocorrelation, label=hyena)
+
+        random.shuffle(HourlyActivityTimeSeries)
+        autocorrelation = signal.correlate(HourlyActivityTimeSeries, HourlyActivityTimeSeries, mode='same') / len(HourlyActivityTimeSeries)
+        lags = signal.correlation_lags(len(HourlyActivityTimeSeries), len(HourlyActivityTimeSeries), mode='same')
+        axs[1].plot(lags, autocorrelation, label=hyena)
+
+    axs[0].vlines(np.arange(min(lags), max(lags), 24), 0, 0.08, color="black", alpha=0.13)
+    axs[1].vlines(np.arange(min(lags), max(lags), 24), 0, 0.08, color="black", alpha=0.13)
+    axs[0].legend(fontsize='x-small')
+    axs[0].text(-570,0.105,"a", fontsize='large', fontweight='bold')
+    axs[1].text(-570,0.105,"b", fontsize='large', fontweight='bold')
+    fig_true.supxlabel("Correlation lag in hours")
+    fig_true.supylabel("Normalised autocorrelation")
+    fig_true.savefig(PROJECTROOT + FIGURES + "HourlyActivityAutocorrelation.pdf")
+    
+
+def daily_activity_patterns():
+    fig_true, axs = plt.subplots(2,1, sharex=True, sharey=True)
+
+    for hyena in HYENAS:
+        TimeAndStates = [line for line in open(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")][1:]
+        TimeAndStates = [(dt.datetime.fromisoformat(line.split(",")[0]), line.split(",")[1].rstrip("\n"))\
+                                                            for line in TimeAndStates]
+
+        Days_Dict = {}
+        for (time, state) in TimeAndStates:
+
+            if (time.month, time.day) not in Days_Dict:
+                Days_Dict[(time.month, time.day)] = []
+
+            if state in [WALK, LOPE]:
+                Days_Dict[(time.month, time.day)].append(1)
+            else:
+                Days_Dict[(time.month, time.day)].append(0)
+
+        Days_Dict = {which_day:statistics.mean(activity) for (which_day, activity) in Days_Dict.items()}
+        DailyActivityTimeSeries = np.array(list(Days_Dict.values()))
+                
+        autocorrelation = signal.correlate(DailyActivityTimeSeries, DailyActivityTimeSeries, mode='same') / len(DailyActivityTimeSeries)
+        lags = signal.correlation_lags(len(DailyActivityTimeSeries), len(DailyActivityTimeSeries), mode='same')
+        axs[0].scatter(lags, autocorrelation, label=hyena, s=0.9)
+
+        random.shuffle(DailyActivityTimeSeries)
+        autocorrelation = signal.correlate(DailyActivityTimeSeries, DailyActivityTimeSeries, mode='same') / len(DailyActivityTimeSeries)
+        lags = signal.correlation_lags(len(DailyActivityTimeSeries), len(DailyActivityTimeSeries), mode='same')
+        axs[1].scatter(lags, autocorrelation, label=hyena, s=0.9)
+
+    axs[0].legend(fontsize='x-small')
+    axs[0].text(-24, 0.06,"a", fontsize='large', fontweight='bold')
+    axs[1].text(-24, 0.06,"b", fontsize='large', fontweight='bold')
+    fig_true.supxlabel("Correlation lag in number of days")
+    fig_true.supylabel("Normalised autocorrelation")
+    fig_true.savefig(PROJECTROOT + FIGURES + "DailyActivityAutocorrelation.pdf")
+
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
-vedba_and_behaviour_correlations()
+#vedba_and_behaviour_correlations()
+day_vs_night_vigilance_behaviours()
+#hourly_activity_patterns()
+#daily_activity_patterns()
+
