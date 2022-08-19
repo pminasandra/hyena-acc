@@ -47,6 +47,3 @@ question is related explicitly to the code, mentioning the make and build of
 your OS, and a detailed log of your error, would be very helpful. Have fun with
 your analyses!
 
-
-T H E   N I G H T   IS   D A R K   A N D   F U L L   O F   T E R R O R S ,
-B U T   T H E   D A Y S   A R E   W A R M   A N D   J O Y F U L . 

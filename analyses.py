@@ -8,6 +8,7 @@ import os
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
+import datetime as dt
 
 from classifier import *
 from variables import *
@@ -343,9 +344,39 @@ def classify_all_available_data():
             for (TimeStamp, Classification) in zip(TimeStamps, AllClasses):
                 File.write(",".join([TimeStamp, Classification])+"\n")
 
+def _check_for_missing_data(filename):
+    lines = [line.strip().split(",") for line in open(filename)][1:]
+    TimeAndStates = [(dt.datetime.fromisoformat(line[0]).astimezone(tz=dt.timezone(dt.timedelta(hours=3))), line[1]) for line in lines]
 
+    Date = TimeAndStates[0][0].date()
+
+    time_1 = TimeAndStates[0][0] - dt.timedelta(seconds=WINDOW_DURATION)
+
+    MissingTimesAndDurations = []
+    for time, state in TimeAndStates:
+        if time - time_1 != dt.timedelta(seconds = WINDOW_DURATION):
+            MissingTimesAndDurations.append((time_1, (time-time_1).total_seconds()))
+        time_1 = time
+
+    return MissingTimesAndDurations
+
+def generate_missing_data_report():
+    """
+    Looks for all points where the time skip between lines is not equal to config.WINDOW_DURATION
+    """
+    for hyena in HYENAS:
+        report = open(PROJECTROOT + DATA + "MissingDataReport/" + hyena + ".csv", "w")
+        MissingData = _check_for_missing_data(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")
+        report.write("timepoint,missing_dur\n")
+
+        for point in MissingData:
+            report.write(str(point[0])+ "," + str(point[1]) + "\n")
+
+        report.close()
+        
 #generate_combined_data_files(0.15, "the infinite devourer who guards the void between the realms")
 #get_metrics_for_randomised_testing()
 #get_metrics_for_auditwise_testing()
 #get_metrics_for_individualwise_testing()
 #classify_all_available_data() #Check for nans in the AllFeature files first.
+generate_missing_data_report()
