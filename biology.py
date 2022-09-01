@@ -984,6 +984,7 @@ def check_for_sleep_debt():
     fig.savefig(PROJECTROOT + FIGURES + "sleep_debt.pdf")
     fig.savefig(PROJECTROOT + FIGURES + "sleep_debt.png")
 
+
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
 #generate_vedba_histograms()
