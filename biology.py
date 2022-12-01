@@ -689,7 +689,7 @@ def _load_daywise_times_and_states(filename, ignore_first_day=True, ignore_last_
 
 def _get_hourly_activity_values(list_of_time_and_states):
     """
-    Takes a list of time and state pairs, usually from the dict returned by _load_daywise_states. Returns hourly activity levels.
+    Takes a list of time and state pairs, usually from the dict returned by _load_daywise_times_and_states(...). Returns hourly activity levels.
     """
     if len(list_of_time_and_states) != 86400/WINDOW_DURATION:
         raise ValueError("list_of_time_and_states needs to be one full day of data.")
@@ -985,6 +985,71 @@ def check_for_sleep_debt():
     fig.savefig(PROJECTROOT + FIGURES + "sleep_debt.png")
 
 
+def check_for_idiosyncrasies(metric="coef_of_var"):
+    """
+    Checks how the daily variance of activity levels within and between an individual differ across days.
+    Args:
+        metric (str): must be in ['var', 'std', 'coef_of_var', 'entropy']
+    """
+
+    assert metric in ['var', 'std', 'coef_of_var', 'entropy']
+    
+    x_axis_vals = list(range(12,24)) + list(range(0, 12))
+    x_axis_vals = [str(x)+":00" for x in x_axis_vals]
+    for i in range(len(x_axis_vals)):
+        if len(x_axis_vals[i])== 4:
+            x_axis_vals[i] = "0" + x_axis_vals[i]
+
+    fig, ax = plt.subplots()
+    ax.axvspan(6.5, 18.5, color="gray", alpha=0.5)
+    #ax.set_ylim([0,4])
+    summary_data_table = []
+
+    if metric == "var":
+        def metric(array):
+            return array.var(axis=0)
+    elif metric == "std":
+        def metric(array):
+            return array.std(axis=0)
+    elif metric == "entropy":
+        from scipy.stats import entropy
+        def metric(array):
+            return entropy(array, axis=0)
+    else:
+        from scipy.stats import variation
+        def metric(array):
+            return variation(array, axis=0)
+
+    for hyena in HYENAS:
+        print("check_for_idiosyncrasies: working on", hyena)
+        hyena_time_and_states = _load_daywise_times_and_states(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")
+        data_table = []
+
+        for day in hyena_time_and_states:
+            data_table.append(_get_hourly_activity_values(hyena_time_and_states[day]))
+
+        data_table = np.array(data_table)
+        print(data_table.shape)
+        summary_data_table.append(data_table.copy())
+
+        mets = list(metric(data_table))
+        mets_plot = mets[12:] + mets[:12]
+        ax.plot(x_axis_vals, mets_plot, "o-", linewidth=1, label=hyena)
+
+
+    mets = list(metric(np.concatenate(summary_data_table)))
+    mets_plot = mets[12:] + mets[:12]
+    ax.set_xticklabels(x_axis_vals, rotation='vertical')
+    ax.plot(x_axis_vals, mets_plot, "o-", linewidth=2, color='black', label='All data')
+    ax.set_xlabel("Time of day")
+    ax.set_ylabel("Coefficient of variation")
+    ax.legend()
+
+    fig.savefig(PROJECTROOT + FIGURES + "individual_idiosyncrasies.png")
+    fig.savefig(PROJECTROOT + FIGURES + "individual_idiosyncrasies.pdf")
+        
+
+
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
 #generate_vedba_histograms()
@@ -1000,3 +1065,4 @@ def check_for_sleep_debt():
 #check_for_activity_compensation()
 #get_sync_in_hyena_sleep_patterns()
 #check_for_sleep_debt()
+check_for_idiosyncrasies("coef_of_var")
