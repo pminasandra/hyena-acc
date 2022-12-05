@@ -1,14 +1,18 @@
 import random
 import datetime as dt
-import numpy as np
-import matplotlib
 import math
 import statistics as stats
-#matplotlib.use("Agg")
-from matplotlib import pyplot as plt
-import powerlaw
 import statistics
+#matplotlib.use("Agg")
+
+import matplotlib
+from matplotlib import pyplot as plt
+import numpy as np
+import powerlaw
 from scipy import signal, stats
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+import pandas as pd
 
 from config import *
 from variables import *
@@ -1048,7 +1052,156 @@ def check_for_idiosyncrasies(metric="coef_of_var"):
     fig.savefig(PROJECTROOT + FIGURES + "individual_idiosyncrasies.png")
     fig.savefig(PROJECTROOT + FIGURES + "individual_idiosyncrasies.pdf")
         
+def check_for_individual_activity_pattern_similarity_umap():
+    """
+    Uses u-MAP (https://arxiv.org/pdf/1802.03426.pdf) to cluster 24-dimensional data representing entire days,
+    and colours them by hyena ID. We expect that individual hyenas have more similar days.
+    """
 
+    import umap
+
+    data_all = []
+    for hyena in HYENAS:
+        print("check_for_individual_activity_pattern_similarity_umap: working on", hyena)
+        hyena_time_and_states = _load_daywise_times_and_states(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")
+        data_table = []
+
+        for day in hyena_time_and_states:
+            data_table.append(_get_hourly_activity_values(hyena_time_and_states[day]))
+
+        data_table = pd.DataFrame(data_table, columns=range(0,24))
+        data_table['id'] = hyena 
+
+        data_all.append(data_table)
+
+    data_all = pd.concat(data_all)
+
+    reducer = umap.UMAP()
+    scaled_data = StandardScaler().fit_transform(data_all[range(0,24)])
+    embedding = reducer.fit_transform(scaled_data)
+
+    fig, axs = plt.subplots(1,2)
+    axs[0].scatter(embedding[:,0], embedding[:,1], c=[sns.color_palette()[x] for x in data_all['id'].map({
+    "WRTH":0,
+    "BORA":1,
+    "BYTE":2,
+    "MGTA":3,
+    "FAY":4
+    })])
+    axs[0].set_title("uMAP reduced data, coloured by individual")
+
+    axs[1].scatter(embedding[:,0], embedding[:,1], c=data_all.index)
+    axs[1].set_title("uMAP reduced data, coloured by date")
+    plt.show()
+
+
+def check_for_individual_activity_pattern_similarity_permutation_test(permutation_test=True, ttest=False):
+    """
+    Using a permutation test, plots the distribution of inter-individual distances.
+    Args:
+        ttest (bool): whether to perform a t-test to compare between and across individuals
+    """
+    from scipy.spatial.distance import cdist
+    from scipy.stats import ttest_ind
+
+    def compute_distances(matrix1, matrix2):
+        distances = cdist(matrix1, matrix2)
+        if np.array_equal(matrix1, matrix2):
+            distances = np.tril(distances, k=-1)
+        else:
+            distances[np.diag_indices(min(distances.shape[0], distances.shape[1]))] = 0.0
+
+        return distances[distances > 0].ravel()
+
+    def compute_within_ind_distances(list_of_tables):
+        within_ind_distances = []
+        for table in list_of_tables:
+            within_ind_dist = compute_distances(table, table)
+            within_ind_distances.extend(within_ind_dist)
+
+        return np.array(within_ind_distances)
+
+    def compute_across_ind_distances(list_of_tables):
+        across_ind_distances = []
+        count = 1
+        for table in list_of_tables:
+            if count == len(list_of_tables):
+                return np.array(across_ind_distances)
+            list_of_tables_2 = list_of_tables.copy()[count:]
+
+            for table2 in list_of_tables_2:
+                across_ind_distances.extend(compute_distances(table, table2))
+
+            count += 1
+
+    data_all = []
+    for hyena in HYENAS:
+        print("check_for_individual_activity_pattern_similarity_permutation_test: working on", hyena)
+        hyena_time_and_states = _load_daywise_times_and_states(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")
+        data_table = []
+
+        for day in hyena_time_and_states:
+            data_table.append(_get_hourly_activity_values(hyena_time_and_states[day]))
+
+        data_table = np.array(data_table)
+        data_all.append(data_table)
+
+    within_ind_distances = compute_within_ind_distances(data_all)
+    across_ind_distances = compute_across_ind_distances(data_all)
+
+    fig, ax = plt.subplots()
+    across_hist = ax.hist(across_ind_distances, 200, label="across pairs of hyenas", color="blue", alpha=0.6)
+    within_hist = ax.hist(within_ind_distances, 200, label="within individual hyenas", color="red", alpha=0.6)
+
+    ax.axvline(np.array(across_ind_distances).mean(), color="blue")
+    ax.axvline(np.array(within_ind_distances).mean(), color="red")
+    true_test_stat = np.array(across_ind_distances).mean() - np.array(within_ind_distances).mean()
+
+    ax.legend()
+    ax.set_xlabel("Distance between daily activity patterns")
+    ax.set_ylabel("Frequency")
+
+    if ttest:
+        t, p = ttest_ind(within_ind_distances, across_ind_distances, equal_var=False)
+
+        ax.text(0.5, 150, r"$t$-statistic = "+f"{t:.3f}")
+        ax.text(0.5, 125, r"$p$-value = "+f"{p:.3f}")
+
+    if permutation_test:
+        NUM_PERMUTATIONS = 5000
+        hyena_lengths = [len(x) for x in data_all]
+        pool_of_days = np.concatenate(data_all)
+        list_of_stats = []
+
+        for i in range(NUM_PERMUTATIONS):
+            pseudo_data_table = []
+            ids = list(range(sum(hyena_lengths)))
+            # First create pseudo-hyenas and populate them with a random set of days
+            count = 0
+            for l in hyena_lengths:
+                pseudo_data_table.append([])
+                id_l = random.sample(ids, l)
+                id_l.sort()
+                pseudo_data_table[count] = pool_of_days[id_l, :]
+
+                for k in id_l:
+                    ids.remove(k)
+
+                count += 1
+
+            # Then compute the test-statistic each time
+            test_stat = compute_across_ind_distances(pseudo_data_table).mean() - compute_within_ind_distances(pseudo_data_table).mean()
+            list_of_stats.append(test_stat)
+
+        list_of_stats = np.array(list_of_stats)
+        p = len(list_of_stats[list_of_stats >= true_test_stat])/NUM_PERMUTATIONS
+
+        ax.text(0.5, 125, r"$p$-value = "+f"{p:.3f}")
+
+    fig.savefig(PROJECTROOT + FIGURES + "permutation_model.png")
+    fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
+
+    
 
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
@@ -1065,4 +1218,6 @@ def check_for_idiosyncrasies(metric="coef_of_var"):
 #check_for_activity_compensation()
 #get_sync_in_hyena_sleep_patterns()
 #check_for_sleep_debt()
-check_for_idiosyncrasies("coef_of_var")
+#check_for_idiosyncrasies("coef_of_var")
+#check_for_individual_activity_pattern_similarity_umap()
+check_for_individual_activity_pattern_similarity_permutation_test()
