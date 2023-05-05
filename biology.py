@@ -1018,11 +1018,11 @@ def check_for_idiosyncrasies(metric="coef_of_var"):
     elif metric == "entropy":
         from scipy.stats import entropy
         def metric(array):
-            return entropy(array, axis=0)
+            return entropy(array, axis=0, nan_policy='omit')
     else:
         from scipy.stats import variation
         def metric(array):
-            return variation(array, axis=0)
+            return variation(array, axis=0, nan_policy='omit')
 
     for hyena in HYENAS:
         print("check_for_idiosyncrasies: working on", hyena)
@@ -1033,11 +1033,13 @@ def check_for_idiosyncrasies(metric="coef_of_var"):
             data_table.append(_get_hourly_activity_values(hyena_time_and_states[day]))
 
         data_table = np.array(data_table)
-        print(data_table.shape)
+        data_table = data_table * (1 - data_table)
         summary_data_table.append(data_table.copy())
 
-        mets = list(metric(data_table))
-        mets_plot = mets[12:] + mets[:12]
+        mets = np.array(metric(data_table))
+        mets_plot = np.array([])
+        mets_plot = np.append(mets_plot, mets[12:]) 
+        mets_plot = np.append(mets_plot, mets[:12])
         ax.plot(x_axis_vals, mets_plot, "o-", linewidth=1, label=hyena)
 
 
@@ -1099,6 +1101,7 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     """
     Using a permutation test, plots the distribution of inter-individual distances.
     Args:
+        permutation_test (bool): whether to perform a permutation test
         ttest (bool): whether to perform a t-test to compare between and across individuals
     """
     from scipy.spatial.distance import cdist
@@ -1153,8 +1156,8 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     across_hist = ax.hist(across_ind_distances, 200, label="across pairs of hyenas", color="blue", alpha=0.6)
     within_hist = ax.hist(within_ind_distances, 200, label="within individual hyenas", color="red", alpha=0.6)
 
-    ax.axvline(np.array(across_ind_distances).mean(), color="blue")
-    ax.axvline(np.array(within_ind_distances).mean(), color="red")
+    ax.axvline(np.array(across_ind_distances).mean(), color="dodgerblue")
+    ax.axvline(np.array(within_ind_distances).mean(), color="indianred")
     true_test_stat = np.array(across_ind_distances).mean() - np.array(within_ind_distances).mean()
 
     ax.legend()
@@ -1201,8 +1204,6 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.png")
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
 
-    
-
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
 #generate_vedba_histograms()
@@ -1218,6 +1219,6 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #check_for_activity_compensation()
 #get_sync_in_hyena_sleep_patterns()
 #check_for_sleep_debt()
-#check_for_idiosyncrasies("coef_of_var")
+check_for_idiosyncrasies("coef_of_var")
 #check_for_individual_activity_pattern_similarity_umap()
-check_for_individual_activity_pattern_similarity_permutation_test()
+#check_for_individual_activity_pattern_similarity_permutation_test()

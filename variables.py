@@ -4,7 +4,6 @@
 #       Directories on the HDD
 HDD_MNT_PNT = '/media/pranav/pranav/'    #Change to appropriate path
 D1 = 'cc16/'    #Where to find folders containing appropriate files for each tagged animal. Set to cc16 unless edited.
-## Note that D2 (within D1) are directories with the names given in TAG_LOOKUP
 D_hdf5 = 'from_ari/acc_lowres/'
 ## acc_lowres contains the hdf5 files. Modify the variable appropriately, so that HDD_MNT_PNT/D_hdf5/ is pointed to your hdf5 files
 

@@ -82,7 +82,7 @@ def compute_proximity_network():
     ax.set_xticklabels(TAG_LOOKUP.keys())
     ax.set_yticks(range(5))
     ax.set_yticklabels(TAG_LOOKUP.keys())
-    ax.axline((0,0), (4,4))
+    #ax.axline((0,0), (4,4))
     fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.pdf")
     fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.png")
     plt.show()

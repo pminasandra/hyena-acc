@@ -1,7 +1,7 @@
 # This file performs analyses of classifiers wrt training data
 
 import sklearn
-from sklearn.metrics import plot_confusion_matrix, precision_recall_fscore_support, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
 import random
 import numpy as np
 import os
@@ -96,10 +96,10 @@ def get_metrics_for_randomised_testing():
     Bundle.train(TrainingFeatures, TrainingClasses)
     Predictions = Bundle.classify(TestFeatures)
 
-    plot_confusion_matrix(Bundle.ClassifiersToUse[0], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES)
+    ConfusionMatrixDisplay.from_estimator(Bundle.ClassifiersToUse[0], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES, colorbar=False)
     plt.title("SVM Confusion Matrix for randomised testing")
     plt.savefig(PROJECTROOT + FIGURES + "SVM_Randomised_Testing_ConfusionMatrix.png")
-    plt.savefig(PROJECTROOT + FIGURES + "SVM_Randomised_Testing_ConfusionMatrix.pgf")
+    plt.savefig(PROJECTROOT + FIGURES + "SVM_Randomised_Testing_ConfusionMatrix.pdf")
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "SVM_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['SVM'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['SVM'])
@@ -124,10 +124,10 @@ def get_metrics_for_randomised_testing():
         ResultsLog.close()
 
     plt.cla()
-    plot_confusion_matrix(Bundle.ClassifiersToUse[1], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES)
+    ConfusionMatrixDisplay.from_estimator(Bundle.ClassifiersToUse[1], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES, colorbar=False)
     plt.title("k-NN Confusion Matrix for randomised testing")
     plt.savefig(PROJECTROOT + FIGURES + "k-NN_Randomised_Testing_ConfusionMatrix.png")
-    plt.savefig(PROJECTROOT + FIGURES + "k-NN_Randomised_Testing_ConfusionMatrix.pgf")
+    plt.savefig(PROJECTROOT + FIGURES + "k-NN_Randomised_Testing_ConfusionMatrix.pdf")
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "k-NN_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['k-NN'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['k-NN'])
@@ -152,10 +152,10 @@ def get_metrics_for_randomised_testing():
         ResultsLog.close()
 
     plt.cla()
-    plot_confusion_matrix(Bundle.ClassifiersToUse[2], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES)
+    ConfusionMatrixDisplay.from_estimator(Bundle.ClassifiersToUse[2], TestFeatures, TestClasses, normalize='true', cmap='Reds', labels=STATES, colorbar=False)
     plt.title("RF Confusion Matrix for randomised testing")
     plt.savefig(PROJECTROOT + FIGURES + "RF_Randomised_Testing_ConfusionMatrix.png")
-    plt.savefig(PROJECTROOT + FIGURES + "RF_Randomised_Testing_ConfusionMatrix.pgf")
+    plt.savefig(PROJECTROOT + FIGURES + "RF_Randomised_Testing_ConfusionMatrix.pdf")
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "RF_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['RF'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['RF'])
@@ -217,10 +217,10 @@ def get_metrics_for_auditwise_testing():
         cm = confusion_matrix(AllTestClasses, AllTestPredictions[Classifier], normalize='true', labels=STATES)
         plt.cla()
         disp = ConfusionMatrixDisplay(cm, display_labels=STATES)
-        disp.plot(cmap='Reds')
+        disp.plot(cmap='Reds', colorbar=False)
         plt.title("{} Confusion Matrix for auditwise testing".format(Classifier))
         plt.savefig(PROJECTROOT + FIGURES + "{}_Auditwise_Testing_ConfusionMatrix.png".format(Classifier))
-        plt.savefig(PROJECTROOT + FIGURES + "{}_Auditwise_Testing_ConfusionMatrix.pgf".format(Classifier))
+        plt.savefig(PROJECTROOT + FIGURES + "{}_Auditwise_Testing_ConfusionMatrix.pdf".format(Classifier))
         with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "{}_Auditwise_Testing_Results.txt".format(Classifier), "w") as ResultsLog:
             precision, recall, fscore, support = precision_recall_fscore_support(AllTestClasses, AllTestPredictions[Classifier], labels=STATES)
             accuracy = accuracy_score(AllTestClasses, AllTestPredictions[Classifier])
@@ -281,7 +281,6 @@ def get_metrics_for_individualwise_testing():
         AllTestPredictions[Classifier] = []
         for x in TempPredictions:
             AllTestPredictions[Classifier].extend(list(x[Classifier]))
-    print(len(AllTestPredictions['SVM']))
 
 
     for Classifier in ['SVM','k-NN','RF']:
@@ -291,7 +290,7 @@ def get_metrics_for_individualwise_testing():
         disp.plot(cmap='Reds')
         plt.title("{} Confusion Matrix for individualwise testing".format(Classifier))
         plt.savefig(PROJECTROOT + FIGURES + "{}_Individualwise_Testing_ConfusionMatrix.png".format(Classifier))
-        plt.savefig(PROJECTROOT + FIGURES + "{}_Individualwise_Testing_ConfusionMatrix.pgf".format(Classifier))
+        plt.savefig(PROJECTROOT + FIGURES + "{}_Individualwise_Testing_ConfusionMatrix.pdf".format(Classifier))
         with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "{}_Individualwise_Testing_Results.txt".format(Classifier), "w") as ResultsLog:
             precision, recall, fscore, support = precision_recall_fscore_support(AllTestClasses, AllTestPredictions[Classifier], labels=STATES)
             accuracy = accuracy_score(AllTestClasses, AllTestPredictions[Classifier])
@@ -375,8 +374,8 @@ def generate_missing_data_report():
         report.close()
         
 #generate_combined_data_files(0.15, "the infinite devourer who guards the void between the realms")
-#get_metrics_for_randomised_testing()
-#get_metrics_for_auditwise_testing()
-#get_metrics_for_individualwise_testing()
+get_metrics_for_randomised_testing()
+get_metrics_for_auditwise_testing()
+get_metrics_for_individualwise_testing()
 #classify_all_available_data() #Check for nans in the AllFeature files first.
-generate_missing_data_report()
+#generate_missing_data_report()
