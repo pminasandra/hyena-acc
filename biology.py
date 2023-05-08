@@ -1199,7 +1199,10 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
         list_of_stats = np.array(list_of_stats)
         p = len(list_of_stats[list_of_stats >= true_test_stat])/NUM_PERMUTATIONS
 
-        ax.text(0.5, 125, r"$p$-value = "+f"{p:.3f}")
+        if p > 0.0:
+            ax.text(0.5, 125, r"$p$-value = "+f"{p:.3f}")
+        else:
+            ax.text(0.5, 125, r"$p$-value < "+f"$\\frac{1}{NUM_PERMUTATIONS}$")
 
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.png")
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
@@ -1219,6 +1222,6 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #check_for_activity_compensation()
 #get_sync_in_hyena_sleep_patterns()
 #check_for_sleep_debt()
-check_for_idiosyncrasies("coef_of_var")
+#check_for_idiosyncrasies("coef_of_var")
 #check_for_individual_activity_pattern_similarity_umap()
-#check_for_individual_activity_pattern_similarity_permutation_test()
+check_for_individual_activity_pattern_similarity_permutation_test()
