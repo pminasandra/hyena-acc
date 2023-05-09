@@ -274,9 +274,9 @@ def vedba_and_behaviour_correlations():
     plt.bar(LEVELS, LOPE_VEDBAS, 0.35, label=LOPE, bottom = LYING_VEDBAS + LYUP_VEDBAS + WALK_VEDBAS + STAND_VEDBAS)
 
     plt.xlabel("VeDBA levels")
-    plt.ylabel("Proportion of time in each state")
+    plt.ylabel("Proportion of time in each behavioural state")
     plt.ylim(0,1.1)
-    plt.legend()
+    plt.legend(loc=(0.6, 0.5))
 
     plt.savefig(PROJECTROOT + FIGURES + "States_and_VeDBAs.png")
     plt.savefig(PROJECTROOT + FIGURES + "States_and_VeDBAs.pdf")
@@ -1202,7 +1202,7 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
         if p > 0.0:
             ax.text(0.5, 125, r"$p$-value = "+f"{p:.3f}")
         else:
-            ax.text(0.5, 125, r"$p$-value < "+f"$\\frac{1}{NUM_PERMUTATIONS}$")
+            ax.text(0.5, 125, r"$p$-value < "+"$\\frac{1}{" + str(NUM_PERMUTATIONS) + "}$")
 
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.png")
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
@@ -1210,7 +1210,7 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
 #generate_vedba_histograms()
-#vedba_and_behaviour_correlations()
+vedba_and_behaviour_correlations()
 #day_vs_night_vigilance_behaviours()
 #hourly_activity_patterns()
 #daily_activity_patterns()
@@ -1224,4 +1224,4 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #check_for_sleep_debt()
 #check_for_idiosyncrasies("coef_of_var")
 #check_for_individual_activity_pattern_similarity_umap()
-check_for_individual_activity_pattern_similarity_permutation_test()
+#check_for_individual_activity_pattern_similarity_permutation_test()
