@@ -1,7 +1,6 @@
 import random
 import datetime as dt
 import math
-import statistics as stats
 import statistics
 #matplotlib.use("Agg")
 
@@ -574,8 +573,8 @@ def get_circadian_rhythms():
                 start_hour = time.hour
 
 
-        hourly_activity_means = [stats.mean(List) for List in hourly_activity_pattern]
-        hourly_activity_stdevs = [stats.stdev(List) for List in hourly_activity_pattern]
+        hourly_activity_means = [statstics.mean(List) for List in hourly_activity_pattern]
+        hourly_activity_stdevs = [statistics.stdev(List) for List in hourly_activity_pattern]
 
         hourly_activity_means = hourly_activity_means[12 - time_zone_shift:] + hourly_activity_means[:12 - time_zone_shift]
         hourly_activity_stdevs = hourly_activity_stdevs[12 - time_zone_shift:] + hourly_activity_stdevs[:12 - time_zone_shift]
@@ -647,7 +646,7 @@ def get_stackplot_for_states_in_day():
 
         temp_list = []
         for stateData in statewise_hourly_activity_pattern:
-            stateData = [stats.mean(List) for List in stateData]
+            stateData = [statistics.mean(List) for List in stateData]
             temp_list.append(stateData)
 
         statewise_hourly_activity_pattern = temp_list
