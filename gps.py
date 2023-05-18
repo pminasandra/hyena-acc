@@ -52,8 +52,11 @@ def compute_proximity_network():
         first_hyena_data = np.array(first_hyena_data[['x', 'y']])
 
         for j in range(5):
-            if j <= i:
+            if j < i:
                 proximity_network_matrix[i,j] = np.nan
+                continue
+            elif j == i:
+                proximity_network_matrix[i,j] = -0.0001
                 continue
             print(f"compute_proximity_network: now working on {num_hyena_dict[i]} -- {num_hyena_dict[j]}")
             second_hyena_data = pd.read_csv(TargetDir + num_hyena_dict[j] + "_GPS.csv", header=0)
@@ -72,17 +75,26 @@ def compute_proximity_network():
 
             proximity_network_matrix[i,j] = proximity_metric
 
-    proximity_network_matrix = proximity_network_matrix[:-1,:]
-    cmap = cm.get_cmap('viridis').copy()
+    #proximity_network_matrix = proximity_network_matrix[:-1,:]
+    positive_cmap = cm.get_cmap('viridis').copy()
+    from matplotlib.colors import LinearSegmentedColormap
+    negative_cmap = LinearSegmentedColormap.from_list('NegativeColorMap', ['gray', 'gray'])
+    cmap = plt.cm.colors.ListedColormap(['gray'] + [positive_cmap(i) for i in np.linspace(0,1,256)])
     cmap.set_bad('w')
     fig, ax = plt.subplots(1,1)
     im = ax.imshow(proximity_network_matrix, cmap=cmap)
     fig.colorbar(im)
+    fig.tight_layout()
     ax.set_xticks(range(5))
-    ax.set_xticklabels(TAG_LOOKUP.keys())
+    ticklabels = list(TAG_LOOKUP.keys())
+    ax.set_yticklabels(ticklabels)
     ax.set_yticks(range(5))
-    ax.set_yticklabels(TAG_LOOKUP.keys())
-    #ax.axline((0,0), (4,4))
+    ticklabels[0] = ''
+    ax.set_xticklabels(ticklabels)
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
     fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.pdf")
     fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.png")
     plt.show()
