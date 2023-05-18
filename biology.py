@@ -802,7 +802,20 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
     """
 
     fig, axs = plt.subplots(5,5, sharex=True, sharey=True)
-    fig.tight_layout()
+    fig.subplots_adjust(wspace=0, hspace=0, left=0.1, right=1-0.025, top=1-0.05, bottom=0.05)
+    for i in range(5):
+        for j in range(5):
+            ax = axs[i, j]
+            if (i, j) != (0, 0) and (i, j) != (4, 4):
+                plt.setp(ax, xticks=[], yticks=[])
+                ax.tick_params(axis=u'both', which=u'both',length=0)
+            else:
+                if (i, j) == (0, 0):
+                    plt.setp(ax, xticks=[], yticks=[0, 10])
+                    ax.set_yticks([0, 10])
+                if (i, j) == (4, 4):
+                    plt.setp(ax, xticks=[0.95, 1.0], yticks=[])
+
     hyena_cnt_1, hyena_cnt_2 = 0, 0
 
     considered_pairs = []
@@ -815,7 +828,12 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
 
         for hyena2 in HYENAS:
             if (hyena2, hyena1) in considered_pairs:
-                axs[hyena_cnt_1, hyena_cnt_2].set_axis_off()
+                axs[hyena_cnt_1, hyena_cnt_2].spines['top'].set_visible(False)
+                axs[hyena_cnt_1, hyena_cnt_2].spines['right'].set_visible(False)
+                axs[hyena_cnt_1, hyena_cnt_2].spines['bottom'].set_visible(False)
+                axs[hyena_cnt_1, hyena_cnt_2].spines['left'].set_visible(False)
+                if hyena_cnt_2 == 0:
+                    axs[hyena_cnt_1, hyena_cnt_2].set_ylabel(hyena1)
                 hyena_cnt_2 += 1
                 continue
             hyena2_time_and_states = _load_daywise_times_and_states(ALL_CLASSIFICATIONS_DIR + f"{hyena2}.csv")
@@ -844,10 +862,16 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
             shuffled_syncs = np.array(shuffled_syncs)
             axs[hyena_cnt_1, hyena_cnt_2].hist(shuffled_syncs, 20)
             axs[hyena_cnt_1, hyena_cnt_2].axvline(true_sync_score, color="red")
-            axs[hyena_cnt_1, hyena_cnt_2].set_title(f"{hyena1} - {hyena2}", fontsize="x-small")
+            #axs[hyena_cnt_1, hyena_cnt_2].set_title(f"{hyena1} - {hyena2}", fontsize="x-small")
+            if hyena_cnt_1 == 0:
+                axs[hyena_cnt_1, hyena_cnt_2].set_title(hyena2)
+            if hyena_cnt_2 == 0:
+                axs[hyena_cnt_1, hyena_cnt_2].set_ylabel(hyena1)
+                if hyena_cnt_2 == hyena_cnt_1:
+                    axs[hyena_cnt_1, hyena_cnt_2].set_yticks([0, 10])
 
             if hyena2 == hyena1:
-                axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#b8c1d9')
+                axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#bfbfbf')
             elif len(shuffled_syncs[shuffled_syncs < true_sync_score]) >= 95:
                 axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#b8d9c1')
             else:
@@ -858,6 +882,11 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
             plt.savefig(PROJECTROOT + FIGURES + "sync_bw_hyenas.pdf")
             considered_pairs.append((hyena1, hyena2))
         hyena_cnt_1 += 1
+    #axs[0, 0].set_yticklabels([0, 10])
+    #axs[4, 4].set_xticklabels([0.9, 1.0])
+    plt.savefig(PROJECTROOT + FIGURES + "sync_bw_hyenas_laststep.png")
+    plt.savefig(PROJECTROOT + FIGURES + "sync_bw_hyenas_laststep.pdf")
+    plt.show()
 
 
 def check_for_activity_compensation():
@@ -1209,7 +1238,7 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #get_bout_duration_distributions()
 #lying_to_lyup_bouts_histogram()
 #generate_vedba_histograms()
-vedba_and_behaviour_correlations()
+#vedba_and_behaviour_correlations()
 #day_vs_night_vigilance_behaviours()
 #hourly_activity_patterns()
 #daily_activity_patterns()
@@ -1217,7 +1246,7 @@ vedba_and_behaviour_correlations()
 #get_stackplot_for_states_in_day()
 #get_activity_cross_correlations()
 #get_sleep_debt_in_hyena_activity_patterns_pairwise()
-#get_sync_in_hyena_activity_patterns()
+get_sync_in_hyena_activity_patterns()
 #check_for_activity_compensation()
 #get_sync_in_hyena_sleep_patterns()
 #check_for_sleep_debt()
