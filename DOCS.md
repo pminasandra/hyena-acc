@@ -4,6 +4,8 @@ This document provides details about how to analyse the spotted hyena telemetry
 data using the pipeline I built. If you have not yet read README.md, I
 recommend reading that before proceeding with this document.
 
+If you are a new user who just wants to try using this code, and are not much
+interested in modifying it, please skip straight to the end.
 
 # Notes
 	- This software is built in and for linux command line execution. This
@@ -137,3 +139,68 @@ To run this code,
 That's it!
 
 --------------------------------------------------------------------------------
+
+# New users
+
+If you are an inexperienced user trying to get this system to run, please follow
+these steps.
+
+1. Download and clone this git repository, and set up with following structure
+   of folders, with this code in the `code` directory:
+
+    ```
+      (Any Empty Directory)
+      ├── code
+      ├── Data
+      │   ├── ClassificationsInTotal
+      │   ├── ClassifierPerformanceResults
+      │   ├── ExtractedFeatures
+      │   └── FeaturesInTotal
+      └── Figures
+    ```
+
+2. Two other variables are needed. One contains the hdf5 files, and one contains
+   audit data. Because of historical reasons with the way data came into
+   this project from various sources, several variables need to be
+   configured for this. First open `variables.py`, and then do this as follows:
+
+   - Set up HDD_MNT_PNT and D_hdf5, such that in combination (HDD_MNT_POINT + D_hdf5) they point to
+     the directory containing the hdf5 files. Make sure both variables end in `/` (or \ if
+     you're using Windows.)
+
+   - Likewise, ensure that PROJECTROOT is set to the directory you
+     initialised above (the one containing code, Data, and all other
+     directories).
+
+   - Also due to historical reasons, audits need to be placed in the
+     directory that is given by the combination of DROPBOXROOT and AUDITS,
+     making sure that they both end in / or \ respectively. Note that there
+     is no need for Dropbox to actually be involved. This naming exists
+     because this data was routinely updated on DROPBOX as this code took
+     form.
+
+   Apologies for this horrendous step. This is circumvented entirely in future
+   projects using the `pathlib` or `os.join` modules, wherein only one file,
+   PROJECTROOT, will need to be defined.
+
+3. Now we will get around to actually running the code. 
+
+   - First, you need to open
+     the file `extractor.py`, scroll to the bottom, and uncomment the line needed
+     for what you need to do. You can uncomment both of these, but note that a lot
+     of RAM may be used. Run this file with `python3 extractor.py`
+
+   - Second, open `analyses.py`. You need to scroll to the bottom, and choose
+     what you need to do by uncommenting specific lines. At the very least,
+     uncomment the lines running the functions `generate_combined_data_files()`,
+     `get_metrics_for_randomised_testing()`, and the other two
+     `get_metrics_for...` functions. Then run this file with `python3
+     analyses.py`
+
+   - Third, and finally, you need to open `biology.py`. This code has plenty of
+     functions at the bottom, and each of them generates a figure. This file
+     contains all biological analyses we performed, some of which are used in
+     the paper. A piece of advice: when you run this code with `python3
+     biology.py`, make sure you uncomment only one function (bottom of the file)at a time. For generating the figures in the paper, different matplotlib settings have been used for different figures, some of which may conflict with each other. 
+
+

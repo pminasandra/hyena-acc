@@ -10,6 +10,8 @@ def _avg(List):
 def _var(List):
         AVG = _avg(List)
         VAR = 0
+        if len(List) == 0:
+            return 0.0
         for x in List:
                 VAR += (x-AVG)**2
         return VAR/(len(List)-1)
