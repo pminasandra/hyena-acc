@@ -801,11 +801,11 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
     Colours each dyad based on whether it is in sync.
     """
 
-    fig, axs = plt.subplots(5,5, sharex=True, sharey=True)
-    fig.subplots_adjust(wspace=0, hspace=0, left=0.1, right=1-0.025, top=1-0.05, bottom=0.05)
+    fig, axs = plt.subplots(5,5, sharex=True, sharey=True, figsize=(4.8, 4.795))    
     for i in range(5):
         for j in range(5):
             ax = axs[i, j]
+            ax.set_box_aspect(1.0)
             if (i, j) != (0, 0) and (i, j) != (4, 4):
                 plt.setp(ax, xticks=[], yticks=[])
                 ax.tick_params(axis=u'both', which=u'both',length=0)
@@ -816,6 +816,7 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
                 if (i, j) == (4, 4):
                     plt.setp(ax, xticks=[0.95, 1.0], yticks=[])
 
+    fig.subplots_adjust(wspace=0, hspace=0, left=0.1, right=1-0.025, top=1-0.05, bottom=0.05)
     hyena_cnt_1, hyena_cnt_2 = 0, 0
 
     considered_pairs = []
@@ -875,7 +876,7 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
             elif len(shuffled_syncs[shuffled_syncs < true_sync_score]) >= 95:
                 axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#b8d9c1')
             else:
-                axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#d9b8c1')
+                axs[hyena_cnt_1, hyena_cnt_2].set_facecolor('#c1b8d9')
             
             hyena_cnt_2 += 1
             plt.savefig(PROJECTROOT + FIGURES + "sync_bw_hyenas.png")
