@@ -10,7 +10,7 @@ import matplotlib.cm as cm
 
 ###
 # CONFIG
-proximity_threshold = 50
+proximity_threshold = 200
 #
 ###
 
@@ -97,8 +97,8 @@ def compute_proximity_network():
 
     ax.tick_params(axis=u'both', which=u'both',length=0)
     fig.tight_layout()
-    fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.pdf")
-    fig.savefig(PROJECTROOT + FIGURES + "ProximityNetwork.png")
+    fig.savefig(PROJECTROOT + FIGURES + f"ProximityNetwork_{proximity_threshold}.pdf")
+    fig.savefig(PROJECTROOT + FIGURES + f"ProximityNetwork_{proximity_threshold}.png")
     plt.show()
 #generate_csv_datasets()
 compute_proximity_network()

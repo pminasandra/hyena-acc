@@ -1,9 +1,16 @@
 
 ###     Navigating the file system to do stuff
 
+# NOTE: All directories are stings ending with "/" (or "\" on windows)
+# HDD_MNT_PNT + D_hdf5 needs to point to the folder with hdf5 files
+# DROPBOXROOT + AUDITS needs to point to the folder with .behaud files
+# Sorry for this horrible way of doing things.
+# Back then I didn't know much about os.path
+# And files were still coming to me when the code was being written
+
+
 #       Directories on the HDD
 HDD_MNT_PNT = '/media/pranav/pranav/'    #Change to appropriate path
-D1 = 'cc16/'    #Where to find folders containing appropriate files for each tagged animal. Set to cc16 unless edited.
 D_hdf5 = 'from_ari/acc_lowres/'
 ## acc_lowres contains the hdf5 files. Modify the variable appropriately, so that HDD_MNT_PNT/D_hdf5/ is pointed to your hdf5 files
 
