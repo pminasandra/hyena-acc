@@ -149,6 +149,7 @@ def vedba_and_behaviour_correlations():
     WALK_VEDBAS = np.array([LOWS_DIR_GLOBAL[WALK], MIDS_DIR_GLOBAL[WALK], HIGHS_DIR_GLOBAL[WALK]])
     LOPE_VEDBAS = np.array([LOWS_DIR_GLOBAL[LOPE], MIDS_DIR_GLOBAL[LOPE], HIGHS_DIR_GLOBAL[LOPE]])
 
+    plt.style.use('tableau-colorblind10')
     plt.bar(LEVELS, LYING_VEDBAS, 0.35, label=LYING)
     plt.bar(LEVELS, LYUP_VEDBAS, 0.35, label=LYUP, bottom=LYING_VEDBAS)
     plt.bar(LEVELS, STAND_VEDBAS, 0.35, label=STAND, bottom=LYING_VEDBAS + LYUP_VEDBAS)
@@ -186,7 +187,8 @@ def get_circadian_rhythms():
             x_axis_vals[i] = "0" + x_axis_vals[i]
     fig, ax = plt.subplots()
 
-    ax.axvspan(6.5, 18.5, color="gray", alpha=0.5)
+    plt.style.use('tableau-colorblind10')
+    ax.axvspan(6.5, 18.5, color="#dedede")
 
     for hyena in HYENAS:
 
@@ -408,6 +410,7 @@ def check_for_activity_compensation():
     Also plots linear regressions separately for each hyena, and reports the R**2 values.
     """
 
+    plt.style.use('tableau-colorblind10')
     fig, ax = plt.subplots(1,1)
 
     for hyena in HYENAS:
@@ -557,6 +560,6 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 #generate_vedba_histograms() #FIG 1
 #vedba_and_behaviour_correlations() #FIG 2
 #get_circadian_rhythms() #FIG 3
-#check_for_activity_compensation() #FIG 4
+check_for_activity_compensation() #FIG 4
 #get_sync_in_hyena_activity_patterns() #FIG 5
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
