@@ -185,10 +185,13 @@ def get_circadian_rhythms():
     for i in range(len(x_axis_vals)):
         if len(x_axis_vals[i])== 4:
             x_axis_vals[i] = "0" + x_axis_vals[i]
+    plt.style.use('tableau-colorblind10')
     fig, ax = plt.subplots()
 
-    plt.style.use('tableau-colorblind10')
-    ax.axvspan(6.5, 18.5, color="#dedede")
+    ax.axvspan(6.66, 18.8344, color="#bebebe") #6:40 to 18:50 approximately (night)
+    ax.axvspan(5.33, 6.66, color="#dedede") #5:20 to 6:40 approximately (twilight)
+    ax.axvspan(18.8344, 20.0833, color="#dedede") #6:40 to 18:50 approximately (twilight)
+
 
     for hyena in HYENAS:
 
@@ -457,6 +460,8 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     from scipy.spatial.distance import cdist
     from scipy.stats import ttest_ind
 
+    plt.rcParams.update({"font.size": 15})
+
     def compute_distances(matrix1, matrix2):
         distances = cdist(matrix1, matrix2)
         if np.array_equal(matrix1, matrix2):
@@ -502,7 +507,7 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     within_ind_distances = compute_within_ind_distances(data_all)
     across_ind_distances = compute_across_ind_distances(data_all)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(layout='tight')
     across_hist = ax.hist(across_ind_distances, 200, label="across pairs of hyenas", color="blue", alpha=0.6)
     within_hist = ax.hist(within_ind_distances, 200, label="within individual hyenas", color="red", alpha=0.6)
 
@@ -546,6 +551,15 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
             test_stat = compute_across_ind_distances(pseudo_data_table).mean() - compute_within_ind_distances(pseudo_data_table).mean()
             list_of_stats.append(test_stat)
 
+        fig2, ax2 = plt.subplots(layout='tight')
+        ax2.hist(list_of_stats, 200, label="Null distribution from permutations")
+        ax2.axvline(true_test_stat, linestyle='dotted', color='black', label="Estimated value")
+        ax2.set_xlabel('Individuality statistic')
+        ax2.set_ylabel('Frequency')
+        ax2.legend()
+        fig2.savefig(PROJECTROOT + FIGURES + "individuality_significance.png")
+        fig2.savefig(PROJECTROOT + FIGURES + "individuality_significance.pdf")
+
         list_of_stats = np.array(list_of_stats)
         p = len(list_of_stats[list_of_stats >= true_test_stat])/NUM_PERMUTATIONS
 
@@ -558,8 +572,9 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
 
 #generate_vedba_histograms() #FIG 1
-#vedba_and_behaviour_correlations() #FIG 2
-#get_circadian_rhythms() #FIG 3
-check_for_activity_compensation() #FIG 4
-#get_sync_in_hyena_activity_patterns() #FIG 5
+# Figure 2 is from analyses.py
+#vedba_and_behaviour_correlations() #FIG 3
+get_circadian_rhythms() #FIG 4
+#check_for_activity_compensation() #FIG 5
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
+#get_sync_in_hyena_activity_patterns() #FIG 7
