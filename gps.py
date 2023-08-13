@@ -40,7 +40,7 @@ def generate_csv_datasets():
         dataframe.to_csv(TargetDir + num_hyena_dict[i] +"_GPS.csv", index = False, na_rep="nan")
 
 
-def compute_proximity_network():
+def compute_proximity_network(proximity_threshold=proximity_threshold):
     """
     Generates a social network based on proximity among individuals.
     """
@@ -82,7 +82,7 @@ def compute_proximity_network():
     cmap = plt.cm.colors.ListedColormap(['gray'] + [positive_cmap(i) for i in np.linspace(0,1,256)])
     cmap.set_bad('w')
     fig, ax = plt.subplots(1,1)
-    im = ax.imshow(proximity_network_matrix, cmap=cmap)
+    im = ax.imshow(proximity_network_matrix, cmap=cmap, vmin=0.0, vmax=0.4) # vmin and vmax fixed for the paper
     fig.colorbar(im)
     ticklabels = list(TAG_LOOKUP.keys())
     ax.set_yticklabels(ticklabels, rotation=90)
@@ -99,6 +99,10 @@ def compute_proximity_network():
     fig.tight_layout()
     fig.savefig(PROJECTROOT + FIGURES + f"ProximityNetwork_{proximity_threshold}.pdf")
     fig.savefig(PROJECTROOT + FIGURES + f"ProximityNetwork_{proximity_threshold}.png")
-    plt.show()
+
 #generate_csv_datasets()
-compute_proximity_network()
+compute_proximity_network(proximity_threshold = 50)
+compute_proximity_network(proximity_threshold = 100)
+compute_proximity_network(proximity_threshold = 200)
+compute_proximity_network(proximity_threshold = 300)
+compute_proximity_network(proximity_threshold = 500)
