@@ -571,10 +571,76 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.png")
     fig.savefig(PROJECTROOT + FIGURES + "permutation_model.pdf")
 
+# Following functions contain analyses addressing reviewer comments
+def individuality_through_variances():
+
+    import random
+    import matplotlib.colors as mcolors
+
+    PERM_COUNT = 5000
+
+    fig, ax = plt.subplots(tight_layout=True)
+    colors = list(mcolors.TABLEAU_COLORS.values())
+
+    data_all = []
+    days_all = []
+    for hyena in HYENAS:
+        print("individuality_through_variances: loading data for", hyena)
+        hyena_time_and_states = _load_daywise_times_and_states(ALL_CLASSIFICATIONS_DIR + hyena + ".csv")
+        data_table = []
+
+        for day in hyena_time_and_states:
+            data_table.append(_get_hourly_activity_values(hyena_time_and_states[day]))
+            days_all.append(_get_hourly_activity_values(hyena_time_and_states[day]))
+
+        data_table = np.array(data_table)
+        data_all.append(data_table)
+
+    def _normalise_activity_curve(dt):
+        means = dt.mean(axis=0)
+        dt2 = dt - means
+        return dt2
+
+    def _d2d_variation(dt):
+        vars_ = dt.var(axis=0)
+        total_var = vars_.sum()
+        return total_var
+
+    def _make_permutations(all_day_dat, n, count=PERM_COUNT):
+        for i in range(count):
+            days = random.sample(all_day_dat, n)
+            yield np.array(days)
+
+    hyena_cnt = 0
+    for hyena in HYENAS:
+        print("individuality_through_variances: processing", hyena)
+        hyena_data = _normalise_activity_curve(data_all[hyena_cnt])
+        hyena_var = _d2d_variation(hyena_data)
+        hyena_num_days = hyena_data.shape[0]
+
+        permuted_d2d_vars = []
+        for perm in _make_permutations(days_all, hyena_num_days, PERM_COUNT):
+            permuted_d2d_vars.append(_d2d_variation(perm))
+
+        permuted_d2d_vars = np.array(permuted_d2d_vars)
+        ax.hist(permuted_d2d_vars, 100, color=colors[hyena_cnt], alpha=0.6)
+        ax.axvline(hyena_var, color=colors[hyena_cnt], label=hyena)
+        ax.legend()
+        ax.set_xlabel("Average total variability")
+        ax.set_ylabel("Frequency")
+        effect_size = permuted_d2d_vars.mean() - hyena_var
+        p_val = (permuted_d2d_vars <= hyena_var).sum()/PERM_COUNT
+        print(hyena, "alternate individuality score is:", effect_size, "p=", p_val)
+        hyena_cnt += 1
+
+    fig.savefig(PROJECTROOT + FIGURES + "alternate_individuality_score.png")
+    fig.savefig(PROJECTROOT + FIGURES + "alternate_individuality_score.pdf")
 #generate_vedba_histograms() #FIG 1
 # Figure 2 is from analyses.py
 #vedba_and_behaviour_correlations() #FIG 3
-get_circadian_rhythms() #FIG 4
+#get_circadian_rhythms() #FIG 4
 #check_for_activity_compensation() #FIG 5
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
-#get_sync_in_hyena_activity_patterns() #FIG 7
+#get_sync_in_hyena_activity_patterns() #FIG 7a
+# Figure 7b, Figure D1 are in gps.py
+individuality_through_variances()
