@@ -407,12 +407,15 @@ def get_sync_in_hyena_activity_patterns(time_resolution=600):
     plt.show()
 
 
-def check_for_activity_compensation():
+def check_for_activity_compensation(m=1):
     """
     Generates a simple scatter plot of activity level on day i and day i+1.
     Also plots linear regressions separately for each hyena, and reports the R**2 values.
     """
 
+    assert m > 0
+    if m > 1:
+        print(f"check_for_activity_compensation: using {m} days for analysis")
     plt.style.use('tableau-colorblind10')
     fig, ax = plt.subplots(1,1)
 
@@ -426,17 +429,34 @@ def check_for_activity_compensation():
             total_daily_activity = sum(hourly_activities)/len(hourly_activities)
             daily_activity_levels.append(total_daily_activity)
 
-        regression = stats.linregress(daily_activity_levels[:-1], daily_activity_levels[1:])
-        scatter = ax.scatter(daily_activity_levels[:-1], daily_activity_levels[1:], label = f"{hyena} ($R^2$ = {regression.rvalue**2:.3f})")
-        max_pt = max(daily_activity_levels)
+        x_vals = []
+        y_vals = []
+        for i in range(m, len(daily_activity_levels)):
+            y_vals.append(daily_activity_levels[i])
+            x_vals.append(sum(daily_activity_levels[i-m:i])/m)
+        assert len(x_vals) == len(y_vals)
+
+        regression = stats.linregress(x_vals, y_vals)
+        scatter = ax.scatter(x_vals, y_vals, label = f"{hyena} ($R^2$ = {regression.rvalue**2:.3f})")
+        max_x = max(x_vals)
+        max_y = max(y_vals)
         plt.draw()
-        ax.axline((0, regression.intercept), (max_pt, max_pt*regression.slope + regression.intercept), color=scatter.get_facecolors()[0], lw=0.3)
-        ax.set_xlabel("Active time proportion on day $i$")
+        ax.axline((0, regression.intercept), (max_x, max_x*regression.slope + regression.intercept), color=scatter.get_facecolors()[0], lw=0.3)
+        ax.set_xlim((min(x_vals)-0.1, max(x_vals)+0.1))
+        ax.set_ylim((min(y_vals)-0.1, max(y_vals)+0.1))
+        if m == 1:
+            ax.set_xlabel("Active time proportion on day $i$")
+        if m > 1:
+            ax.set_xlabel(f"Active time proportion on {m} days (between day $i-{m-1}$ and day $i$)")
         ax.set_ylabel("Active time proportion on day $i+1$")
         
     ax.legend(fontsize='small')
-    fig.savefig(PROJECTROOT + FIGURES + "activity_compensation.pdf")
-    fig.savefig(PROJECTROOT + FIGURES + "activity_compensation.png")
+    if m == 1:
+        fig.savefig(PROJECTROOT + FIGURES + "activity_compensation.pdf")
+        fig.savefig(PROJECTROOT + FIGURES + "activity_compensation.png")
+    else:
+        fig.savefig(PROJECTROOT + FIGURES + f"activity_compensation_m_{m}.pdf")
+        fig.savefig(PROJECTROOT + FIGURES + f"activity_compensation_m_{m}.png")
 
 def _expand_list_of_lists(List):
     ret = []
@@ -639,8 +659,10 @@ def individuality_through_variances():
 # Figure 2 is from analyses.py
 #vedba_and_behaviour_correlations() #FIG 3
 #get_circadian_rhythms() #FIG 4
-#check_for_activity_compensation() #FIG 5
+check_for_activity_compensation() #FIG 5
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
 #get_sync_in_hyena_activity_patterns() #FIG 7a
 # Figure 7b, Figure D1 are in gps.py
-individuality_through_variances()
+#individuality_through_variances() #Fig C1
+check_for_activity_compensation(2)
+check_for_activity_compensation(5)
