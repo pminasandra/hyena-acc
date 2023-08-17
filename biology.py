@@ -659,10 +659,10 @@ def individuality_through_variances():
 # Figure 2 is from analyses.py
 #vedba_and_behaviour_correlations() #FIG 3
 #get_circadian_rhythms() #FIG 4
-check_for_activity_compensation() #FIG 5
+#check_for_activity_compensation() #FIG 5
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
 #get_sync_in_hyena_activity_patterns() #FIG 7a
-# Figure 7b, Figure D1 are in gps.py
+# Figure 7b, Figure E1 are in gps.py
 #individuality_through_variances() #Fig C1
-check_for_activity_compensation(2)
-check_for_activity_compensation(5)
+#check_for_activity_compensation(2) Appendix C
+#check_for_activity_compensation(5) Appendix C
