@@ -595,12 +595,10 @@ def check_for_individual_activity_pattern_similarity_permutation_test(permutatio
 def individuality_through_variances():
 
     import random
-    import matplotlib.colors as mcolors
 
     PERM_COUNT = 5000
 
     fig, ax = plt.subplots(tight_layout=True)
-    colors = list(mcolors.TABLEAU_COLORS.values())
 
     data_all = []
     days_all = []
@@ -632,26 +630,30 @@ def individuality_through_variances():
             yield np.array(days)
 
     hyena_cnt = 0
+    permuted_d2d_vars = []
+    hyena_vars = []
     for hyena in HYENAS:
         print("individuality_through_variances: processing", hyena)
         hyena_data = _normalise_activity_curve(data_all[hyena_cnt])
         hyena_var = _d2d_variation(hyena_data)
+        hyena_vars.append(hyena_var)
         hyena_num_days = hyena_data.shape[0]
 
-        permuted_d2d_vars = []
         for perm in _make_permutations(days_all, hyena_num_days, PERM_COUNT):
             permuted_d2d_vars.append(_d2d_variation(perm))
-
-        permuted_d2d_vars = np.array(permuted_d2d_vars)
-        ax.hist(permuted_d2d_vars, 100, color=colors[hyena_cnt], alpha=0.6)
-        ax.axvline(hyena_var, color=colors[hyena_cnt], label=hyena)
-        ax.legend()
-        ax.set_xlabel("Average total variability")
-        ax.set_ylabel("Frequency")
-        effect_size = permuted_d2d_vars.mean() - hyena_var
-        p_val = (permuted_d2d_vars <= hyena_var).sum()/PERM_COUNT
-        print(hyena, "alternate individuality score is:", effect_size, "p=", p_val)
         hyena_cnt += 1
+
+    permuted_d2d_vars = np.array(permuted_d2d_vars)
+    ax.hist(permuted_d2d_vars, 100, alpha=0.6)
+    hyena_var = np.array(hyena_vars).mean()
+    ax.axvline(permuted_d2d_vars.mean(), linestyle="dotted")
+    ax.axvline(hyena_var)
+    ax.set_xlabel("Daily variability")
+    ax.set_ylabel("Frequency")
+    effect_size = permuted_d2d_vars.mean() - hyena_var
+    p_val = (permuted_d2d_vars <= hyena_var).sum()/PERM_COUNT
+
+    print(f"individuality_through_variances: effect size = {effect_size}; p = {p_val}")
 
     fig.savefig(PROJECTROOT + FIGURES + "alternate_individuality_score.png")
     fig.savefig(PROJECTROOT + FIGURES + "alternate_individuality_score.pdf")
@@ -663,6 +665,6 @@ def individuality_through_variances():
 #check_for_individual_activity_pattern_similarity_permutation_test() # FIG 6
 #get_sync_in_hyena_activity_patterns() #FIG 7a
 # Figure 7b, Figure E1 are in gps.py
-#individuality_through_variances() #Fig C1
+individuality_through_variances() #Fig C1
 #check_for_activity_compensation(2) Appendix C
 #check_for_activity_compensation(5) Appendix C
