@@ -16,7 +16,7 @@ D_hdf5 = 'from_ari/acc_lowres/'
 
 
 #       Directories on computer
-PROJECTROOT = '/media/pranav/Data1/Personal/Projects/Strandburg-Peshkin 2019-20/'
+PROJECTROOT = '/media/pranav/Data1/Personal/Projects/Completed/Strandburg-Peshkin 2019-20/'
 FIGURES = 'Figures/'
 DATA = 'Data/'
 TEMP = 'temp/'
