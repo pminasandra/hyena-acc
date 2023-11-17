@@ -1,7 +1,9 @@
 # hyena-behaviour-classifier-inator
 This repo contains code for predicting hyena behaviour from accelerometer data.
 The raw data used here was obtained as part of the [CCAS](https://movecall.group)
-project. This project is described in detail in our [pre-print](https://www.biorxiv.org/content/10.1101/2023.05.31.543053v1.article-metrics).
+project. This project is described in detail in our
+[pre-print](https://www.biorxiv.org/content/10.1101/2023.05.31.543053v2) and in
+our [paper](https://doi.org/10.1098/rsos.230750).
 The members who contributed to the code in this repo are:
 - Pranav Minasandra
 - Ariana Strandburg-Peshkin
@@ -37,7 +39,7 @@ effectively and how to interpret the results.
 
 # Contact
 If you have any questions or problems with the code, please feel free to contact
-me using the methods mentioned on my website, pminasandra.github.io . If your
+me using the methods mentioned on my [website](https://pminasandra.github.io). If your
 question is related explicitly to the code, mentioning the make and build of
 your OS, and a detailed log of your error, would be very helpful. Have fun with
 your analyses!
