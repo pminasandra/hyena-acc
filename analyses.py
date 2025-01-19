@@ -1,7 +1,7 @@
 # This file performs analyses of classifiers wrt training data
 
 import sklearn
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, f1_score, confusion_matrix, ConfusionMatrixDisplay
 import random
 import numpy as np
 import os
@@ -103,6 +103,7 @@ def get_metrics_for_randomised_testing():
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "SVM_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['SVM'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['SVM'])
+        f1 = f1_score(TestClasses, Predictions['SVM'], average='weighted')
 
         ResultsLog.write("Classifications for an SVM classifier.\n\n")
         ResultsLog.write("Precision Table:\n")
@@ -114,6 +115,7 @@ def get_metrics_for_randomised_testing():
         ResultsLog.write("\t".join(["%.2f"%x for x in recall]) + "\n\n")
 
         ResultsLog.write("Accuracy Score: %.2f\n\n" % accuracy)
+        ResultsLog.write("F1 Score: %.2f\n\n" % f1)
 
         ResultsLog.write("LaTeX usable code provided here:\n\n")
         ResultsLog.write("\\begin{tabular}{*%dc}\n" % len(STATES))
@@ -131,6 +133,7 @@ def get_metrics_for_randomised_testing():
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "k-NN_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['k-NN'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['k-NN'])
+        f1 = f1_score(TestClasses, Predictions['k-NN'], average='weighted')
 
         ResultsLog.write("Classifications for an k-NN classifier.\n\n")
         ResultsLog.write("Precision Table:\n")
@@ -142,6 +145,7 @@ def get_metrics_for_randomised_testing():
         ResultsLog.write("\t".join(["%.2f"%x for x in recall]) + "\n\n")
 
         ResultsLog.write("Accuracy Score: %.2f\n\n" % accuracy)
+        ResultsLog.write("F1 Score: %.2f\n\n" % f1)
 
         ResultsLog.write("LaTeX usable code provided here:\n\n")
         ResultsLog.write("\\begin{tabular}{*%dc}\n" % len(STATES))
@@ -159,6 +163,7 @@ def get_metrics_for_randomised_testing():
     with open(PROJECTROOT + DATA + "ClassifierPerformanceResults/" + "RF_Randomised_Testing_Results.txt", "w") as ResultsLog:
         precision, recall, fscore, support = precision_recall_fscore_support(TestClasses, Predictions['RF'], labels=STATES)
         accuracy = accuracy_score(TestClasses, Predictions['RF'])
+        f1 = f1_score(TestClasses, Predictions['RF'], average='weighted')
 
         ResultsLog.write("Classifications for an RF classifier.\n\n")
         ResultsLog.write("Precision Table:\n")
@@ -170,6 +175,7 @@ def get_metrics_for_randomised_testing():
         ResultsLog.write("\t".join(["%.2f"%x for x in recall]) + "\n\n")
 
         ResultsLog.write("Accuracy Score: %.2f\n\n" % accuracy)
+        ResultsLog.write("F1 Score: %.2f\n\n" % f1)
 
         ResultsLog.write("LaTeX usable code provided here:\n\n")
         ResultsLog.write("\\begin{tabular}{*%dc}\n" % len(STATES))
